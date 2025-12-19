@@ -7,15 +7,15 @@ import csv
 from pathlib import Path
 from typing import List
 
-from PySide6.QtCore import QCoreApplication, QSettings, Qt, QThread, QUrl
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtCore import QCoreApplication, QSettings, Qt, QThread, QUrl, QPropertyAnimation, QSequentialAnimationGroup, QEasingCurve, QTimer
+from PySide6.QtGui import QDesktopServices, QColor, QPainter, QRadialGradient, QIcon, QPixmap, QFont
 from PySide6.QtWidgets import (
-    QApplication,
     QButtonGroup,
     QCheckBox,
     QComboBox,
     QFileDialog,
     QFormLayout,
+    QGraphicsDropShadowEffect,
     QGroupBox,
     QHBoxLayout,
     QHeaderView,
@@ -35,6 +35,59 @@ from PySide6.QtWidgets import (
 from .models import ResultFilterProxy, ResultsTableModel
 from .worker import ScrubWorker
 from .theme import Colors
+from .stars_background import Star
+import random
+
+
+class StarsCentralWidget(QWidget):
+    """Central widget that paints stars in background before rendering UI."""
+
+    def __init__(self, stars: list[Star], parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.stars = stars
+
+    def paintEvent(self, event) -> None:  # type: ignore[no-untyped-def]
+        """Paint stars background, then let UI render."""
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing, True)
+        
+        # Paint the background color first
+        painter.fillRect(self.rect(), QColor(Colors.BACKGROUND))
+        
+        # Draw stars with prominent glow
+        for star in self.stars:
+            # Create radial gradient glow for each star
+            glow_radius = star.radius * 8  # Larger glow area
+            gradient = QRadialGradient(star.x, star.y, glow_radius)
+            
+            # Bright magenta core and purple glow
+            core_color = QColor("#ff006e")  # Bright magenta like logo
+            core_color.setAlphaF(star.current_opacity * 0.8)
+            
+            glow_color = QColor("#bb00dd")  # Purple glow
+            glow_color.setAlphaF(star.current_opacity * 0.4)
+            
+            edge_color = QColor("#8800bb")
+            edge_color.setAlphaF(star.current_opacity * 0.1)
+            
+            gradient.setColorAt(0.0, core_color)
+            gradient.setColorAt(0.4, glow_color)
+            gradient.setColorAt(1.0, edge_color)
+            
+            painter.setBrush(gradient)
+            painter.setPen(Qt.NoPen)
+            # Draw larger star
+            painter.drawEllipse(
+                int(star.x - glow_radius),
+                int(star.y - glow_radius),
+                int(glow_radius * 2),
+                int(glow_radius * 2),
+            )
+        
+        painter.end()
+        
+        # Let parent class render UI widgets on top
+        super().paintEvent(event)
 
 
 class MainWindow(QMainWindow):
@@ -43,6 +96,16 @@ class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("ScrubMeta")
+        
+        # Set window icon to crystal ball emoji
+        pixmap = QPixmap(64, 64)
+        pixmap.fill(Qt.transparent)
+        painter = QPainter(pixmap)
+        painter.setFont(QFont("Arial", 48))
+        painter.drawText(pixmap.rect(), Qt.AlignCenter, "🔮")
+        painter.end()
+        self.setWindowIcon(QIcon(pixmap))
+        
         self.setMinimumSize(1200, 700)
         QCoreApplication.setOrganizationName("scrubmeta")
         QCoreApplication.setApplicationName("ScrubMeta")
@@ -50,17 +113,29 @@ class MainWindow(QMainWindow):
         self.settings = QSettings()
         self.thread: QThread | None = None
         self.worker: ScrubWorker | None = None
+        
+        # Initialize stars with deterministic seed only once
+        random.seed(42)
+        self.stars: list[Star] = []
+        self._generate_stars_internal()
+        # Now let random be truly random for drift
+        random.seed()
+        
+        # Animation timer for stars - faster update for smooth motion
+        self.stars_timer = QTimer()
+        self.stars_timer.timeout.connect(self._update_stars)
+        self.stars_timer.start(50)  # 50ms = 20 FPS for smooth animation
 
         self._build_ui()
         self._load_settings()
-        self._update_mode_state()
         self._update_action_state()
 
     # UI construction
     def _build_ui(self) -> None:
         """Build the main UI with header, two-column layout, and status bar."""
         
-        central = QWidget()
+        # Create central widget with stars background painting
+        central = StarsCentralWidget(self.stars)
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
@@ -76,9 +151,12 @@ class MainWindow(QMainWindow):
 
         central.setLayout(main_layout)
         self.setCentralWidget(central)
+        
+        # Store reference for updates
+        self.central_widget = central
 
     def _build_header_bar(self) -> QWidget:
-        """Build the header bar with title and status pill."""
+        """Build the header bar with animated logo, title and status pill."""
         header = QWidget()
         header.setObjectName("headerBar")
         header.setFixedHeight(70)
@@ -87,15 +165,34 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(24, 12, 24, 12)
         layout.setSpacing(16)
 
+        # Animated logo section
+        logo_label = QLabel("🔮")
+        logo_label.setObjectName("animatedLogo")
+        logo_label.setStyleSheet(f"""
+            QLabel#animatedLogo {{
+                font-size: 48px;
+                color: {Colors.PRIMARY};
+            }}
+        """)
+        logo_label.setMinimumSize(60, 60)
+        logo_label.setAlignment(Qt.AlignCenter)
+        
+        # Apply pulsing animation
+        self._animate_logo(logo_label)
+
         # Title section
         title_layout = QVBoxLayout()
+        title_layout.setSpacing(2)  # Tight spacing between title and subtitle
+        title_layout.setContentsMargins(0, 0, 0, 0)
+        
         title_label = QLabel("ScrubMeta")
-        title_label.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {Colors.PRIMARY};")
+        title_label.setStyleSheet(f"font-size: 36px; font-weight: bold; color: {Colors.PRIMARY}; line-height: 1.0;")
         subtitle_label = QLabel("Remove metadata safely — single or batch")
         subtitle_label.setStyleSheet(f"color: {Colors.TEXT_SECONDARY}; font-size: 11px;")
         title_layout.addWidget(title_label)
         title_layout.addWidget(subtitle_label)
 
+        layout.addWidget(logo_label, 0)
         layout.addLayout(title_layout, 1)
 
         # Status pill
@@ -116,6 +213,36 @@ class MainWindow(QMainWindow):
 
         header.setLayout(layout)
         return header
+
+    def _animate_logo(self, logo: QLabel) -> None:
+        """Apply pulsing purple glow effect to the logo."""
+        # Create a glowing shadow effect and store as instance variable
+        self.glow_effect = QGraphicsDropShadowEffect()
+        self.glow_effect.setBlurRadius(5)
+        self.glow_effect.setXOffset(0)
+        self.glow_effect.setYOffset(0)
+        self.glow_effect.setColor(QColor("#ff006e"))  # Magenta glow
+        logo.setGraphicsEffect(self.glow_effect)
+        
+        # Animate the blur radius to create pulsing glow
+        self.glow_animation_in = QPropertyAnimation(self.glow_effect, b"blurRadius")
+        self.glow_animation_in.setDuration(1500)
+        self.glow_animation_in.setStartValue(5)
+        self.glow_animation_in.setEndValue(30)
+        self.glow_animation_in.setEasingCurve(QEasingCurve.InOutQuad)
+        
+        self.glow_animation_out = QPropertyAnimation(self.glow_effect, b"blurRadius")
+        self.glow_animation_out.setDuration(1500)
+        self.glow_animation_out.setStartValue(30)
+        self.glow_animation_out.setEndValue(5)
+        self.glow_animation_out.setEasingCurve(QEasingCurve.InOutQuad)
+        
+        # Create looping sequence
+        self.animation_group = QSequentialAnimationGroup()
+        self.animation_group.addAnimation(self.glow_animation_in)
+        self.animation_group.addAnimation(self.glow_animation_out)
+        self.animation_group.setLoopCount(-1)
+        self.animation_group.start()
 
     def _build_content_area(self) -> QWidget:
         """Build the two-column main content area."""
@@ -194,52 +321,28 @@ class MainWindow(QMainWindow):
         return bar
 
     def _build_input_group(self) -> QGroupBox:
-        group = QGroupBox("Input Mode")
+        group = QGroupBox("Input")
         form = QFormLayout()
 
-        # Mode selection as toggle buttons
-        self.file_radio = QPushButton("Single File")
-        self.file_radio.setCheckable(True)
-        self.file_radio.setChecked(True)
-        self.file_radio.setMinimumHeight(36)
-        
-        self.folder_radio = QPushButton("Folder (Batch)")
-        self.folder_radio.setCheckable(True)
-        self.folder_radio.setMinimumHeight(36)
-
-        self.mode_group = QButtonGroup(self)
-        self.mode_group.addButton(self.file_radio, 0)
-        self.mode_group.addButton(self.folder_radio, 1)
-
-        mode_row = QHBoxLayout()
-        mode_row.addWidget(self.file_radio)
-        mode_row.addWidget(self.folder_radio)
-        form.addRow(mode_row)
-
-        # Picker buttons and display
+        # Single picker button (auto-detects file vs folder)
         self.input_path_edit = QLineEdit()
         self.input_path_edit.setReadOnly(True)
         self.input_path_edit.setPlaceholderText("Choose a file or folder…")
         self.input_path_edit.setMinimumHeight(32)
 
+        self.pick_input_btn = QPushButton("📂 Select File/Folder")
+        self.pick_input_btn.setMinimumHeight(32)
+
         pick_row = QHBoxLayout()
-        self.pick_file_btn = QPushButton("📁 File")
-        self.pick_file_btn.setMinimumHeight(32)
-        self.pick_folder_btn = QPushButton("📂 Folder")
-        self.pick_folder_btn.setMinimumHeight(32)
-        pick_row.addWidget(self.pick_file_btn)
-        pick_row.addWidget(self.pick_folder_btn)
+        pick_row.addWidget(self.pick_input_btn)
 
         form.addRow("Select", pick_row)
         form.addRow(self.input_path_edit)
 
         group.setLayout(form)
 
-        # Connections
-        self.file_radio.clicked.connect(self._on_mode_changed)
-        self.folder_radio.clicked.connect(self._on_mode_changed)
-        self.pick_file_btn.clicked.connect(self._pick_file)
-        self.pick_folder_btn.clicked.connect(self._pick_folder)
+        # Connection
+        self.pick_input_btn.clicked.connect(self._pick_input)
 
         return group
 
@@ -415,35 +518,26 @@ class MainWindow(QMainWindow):
 
         return container
 
-    # Mode handling
-    def _on_mode_changed(self) -> None:
-        self.file_radio.setChecked(self.sender() is self.file_radio)
-        self.folder_radio.setChecked(self.sender() is self.folder_radio)
-        self._update_mode_state()
-        self._update_action_state()
+    # Input picker (auto-detects file vs folder)
+    def _pick_input(self) -> None:
+        """Open file/folder picker dialog."""
+        path = QFileDialog.getExistingDirectory(self, "Select file or folder to scrub")
+        if path:
+            self.input_path_edit.setText(path)
+            self._update_input_options()
+            self._update_action_state()
 
-    def _update_mode_state(self) -> None:
-        is_folder = self.folder_radio.isChecked()
-        self.pick_file_btn.setEnabled(not is_folder)
-        self.pick_folder_btn.setEnabled(is_folder)
+    def _update_input_options(self) -> None:
+        """Update recursive/structure options based on input type."""
+        input_path = self._input_path()
+        is_folder = input_path and input_path.is_dir()
+        
         self.recursive_cb.setEnabled(is_folder)
         self.keep_structure_cb.setEnabled(is_folder)
+        
         if not is_folder:
             self.recursive_cb.setChecked(False)
             self.keep_structure_cb.setChecked(False)
-
-    # Pickers
-    def _pick_file(self) -> None:
-        path, _ = QFileDialog.getOpenFileName(self, "Select file to scrub")
-        if path:
-            self.input_path_edit.setText(path)
-        self._update_action_state()
-
-    def _pick_folder(self) -> None:
-        path = QFileDialog.getExistingDirectory(self, "Select folder to scrub")
-        if path:
-            self.input_path_edit.setText(path)
-        self._update_action_state()
 
     def _pick_output_folder(self) -> None:
         path = QFileDialog.getExistingDirectory(self, "Select output folder")
@@ -471,10 +565,6 @@ class MainWindow(QMainWindow):
         if not input_path or not input_path.exists():
             return False
         if not output_path:
-            return False
-        if self.folder_radio.isChecked() and not input_path.is_dir():
-            return False
-        if self.file_radio.isChecked() and not input_path.is_file():
             return False
         return True
 
@@ -694,6 +784,11 @@ class MainWindow(QMainWindow):
         self.settings.setValue("dry_run", self.dry_run_cb.isChecked())
         self.settings.setValue("ffmpeg_path", self.ffmpeg_path_edit.text())
 
+    def showEvent(self, event) -> None:  # type: ignore[override]
+        """Regenerate stars after window is shown with proper size."""
+        super().showEvent(event)
+        self._generate_stars()
+
     def closeEvent(self, event) -> None:  # type: ignore[override]
         self._save_settings()
         if self.thread and self.thread.isRunning():
@@ -701,3 +796,55 @@ class MainWindow(QMainWindow):
             self.thread.quit()
             self.thread.wait(2000)
         super().closeEvent(event)
+
+    def resizeEvent(self, event) -> None:  # type: ignore[override]
+        """Regenerate stars on window resize."""
+        super().resizeEvent(event)
+        self._generate_stars()
+
+    def _generate_stars_internal(self) -> None:
+        """Generate initial star field (called during init with seed)."""
+        # Use actual window dimensions when available
+        if self.geometry().isValid():
+            width = max(self.width(), 1200)
+            height = max(self.height(), 700)
+        else:
+            width = 1200
+            height = 700
+        
+        # More stars, more visible
+        star_count = max(60, min(150, (width * height) // 10000))
+        
+        self.stars = [
+            Star(
+                x=random.uniform(0, width),
+                y=random.uniform(0, height),
+                radius=random.uniform(2.5, 5.0),
+                base_opacity=random.uniform(0.15, 0.35),
+                width=float(width),
+                height=float(height),
+            )
+            for _ in range(star_count)
+        ]
+
+    def _generate_stars(self) -> None:
+        """Regenerate star field on resize (no seed - allows drift)."""
+        # Use actual window dimensions when available
+        if self.geometry().isValid():
+            width = max(self.width(), 1200)
+            height = max(self.height(), 700)
+        else:
+            width = 1200
+            height = 700
+        
+        # Update existing stars' boundaries
+        for star in self.stars:
+            star.width = float(width)
+            star.height = float(height)
+
+    def _update_stars(self) -> None:
+        """Update star opacity and request repaint."""
+        for star in self.stars:
+            star.update()
+        # Force repaint of central widget
+        self.update()
