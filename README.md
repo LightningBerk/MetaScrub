@@ -19,6 +19,24 @@ A Python tool for removing metadata from files. Supports images, PDFs, Office do
 
 > **Note**: PySide6 (GUI framework) currently supports Python up to 3.13. If you have Python 3.14+, use Python 3.12 instead.
 
+### macOS one-click (GUI)
+
+For the easiest path on macOS, use the included installer/launcher:
+
+```bash
+chmod +x install_and_run.command
+./install_and_run.command
+```
+
+What it does:
+- Creates/uses `.venv`, installs MetaScrub deps.
+- Checks for `ffmpeg`; if missing and Homebrew is available, runs `brew install ffmpeg`.
+- If Homebrew is not installed, it exits with a clear message (install Homebrew, then rerun).
+- Launches the GUI when setup is complete.
+
+Tip: If your default Python is 3.14+, run with a supported interpreter:
+`PYTHON_BIN=python3.12 ./install_and_run.command`
+
 ### 1. Setup
 
 ```bash

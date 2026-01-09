@@ -10,6 +10,7 @@ from typing import List
 from PySide6.QtCore import QCoreApplication, QSettings, Qt, QThread, QUrl, QPropertyAnimation, QSequentialAnimationGroup, QEasingCurve, QTimer
 from PySide6.QtGui import QDesktopServices, QColor, QPainter, QRadialGradient, QIcon, QPixmap, QFont
 from PySide6.QtWidgets import (
+    QApplication,
     QButtonGroup,
     QCheckBox,
     QComboBox,
