@@ -521,12 +521,23 @@ class MainWindow(QMainWindow):
 
     # Input picker (auto-detects file vs folder)
     def _pick_input(self) -> None:
-        """Open file/folder picker dialog."""
-        path = QFileDialog.getExistingDirectory(self, "Select file or folder to scrub")
-        if path:
-            self.input_path_edit.setText(path)
-            self._update_input_options()
-            self._update_action_state()
+        """Open a dialog that accepts either a file or a folder."""
+        dialog = QFileDialog(self, "Select file or folder to scrub")
+        dialog.setFileMode(QFileDialog.ExistingFiles)  # allows files; non-native dialog also permits folders
+        dialog.setOption(QFileDialog.DontUseNativeDialog, True)
+        dialog.setAcceptMode(QFileDialog.AcceptOpen)
+        dialog.setNameFilter(
+            "Supported files (*.jpg *.jpeg *.png *.webp *.gif *.tif *.tiff *.bmp *.pdf *.docx *.xlsx *.pptx *.mp4 *.mov *.avi *.mkv *.mp3 *.wav);;All files (*)"
+        )
+
+        if dialog.exec():
+            selected = dialog.selectedFiles()
+            if selected:
+                # Take the first selection; folder selections are supported in non-native dialog
+                path = selected[0]
+                self.input_path_edit.setText(path)
+                self._update_input_options()
+                self._update_action_state()
 
     def _update_input_options(self) -> None:
         """Update recursive/structure options based on input type."""
