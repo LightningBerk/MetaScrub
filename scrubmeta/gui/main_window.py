@@ -5,13 +5,11 @@ from __future__ import annotations
 import json
 import csv
 from pathlib import Path
-from typing import List
 
 from PySide6.QtCore import QCoreApplication, QSettings, Qt, QThread, QUrl, QPropertyAnimation, QSequentialAnimationGroup, QEasingCurve, QTimer
 from PySide6.QtGui import QDesktopServices, QColor, QPainter, QRadialGradient, QIcon, QPixmap, QFont, QDragEnterEvent, QDropEvent
 from PySide6.QtWidgets import (
     QApplication,
-    QButtonGroup,
     QCheckBox,
     QComboBox,
     QFileDialog,
@@ -750,7 +748,7 @@ class MainWindow(QMainWindow):
     def _update_status_pill(self, text: str, status: str) -> None:
         """Update the status pill with text and style class."""
         self.status_pill.setText(text)
-        style = f"""
+        style = """
             background-color: rgba(61, 0, 102, 0.6);
             border-radius: 16px;
             padding: 6px 14px;

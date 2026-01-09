@@ -1,8 +1,7 @@
 """File discovery and output management utilities."""
 
 from pathlib import Path
-from typing import List, Set
-import shutil
+from typing import List
 
 
 class FileDiscovery:

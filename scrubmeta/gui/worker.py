@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
 from PySide6.QtCore import QObject, Signal
 
 from ..core import CancelToken, ScrubCallbacks, scrub_path
-from ..utils.result import ResultType, ScrubResult
+from ..utils.result import ScrubResult
 
 
 class ScrubWorker(QObject):
