@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List
 
 from PySide6.QtCore import QCoreApplication, QSettings, Qt, QThread, QUrl, QPropertyAnimation, QSequentialAnimationGroup, QEasingCurve, QTimer
-from PySide6.QtGui import QDesktopServices, QColor, QPainter, QRadialGradient, QIcon, QPixmap, QFont
+from PySide6.QtGui import QDesktopServices, QColor, QPainter, QRadialGradient, QIcon, QPixmap, QFont, QDragEnterEvent, QDropEvent
 from PySide6.QtWidgets import (
     QApplication,
     QButtonGroup,
@@ -38,6 +38,41 @@ from .worker import ScrubWorker
 from .theme import Colors
 from .stars_background import Star
 import random
+
+
+class DragDropLineEdit(QLineEdit):
+    """QLineEdit that accepts drag-and-drop of files/folders."""
+
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setAcceptDrops(True)
+
+    def dragEnterEvent(self, event: QDragEnterEvent) -> None:
+        """Accept drag if it contains file URLs."""
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event: QDropEvent) -> None:
+        """Handle dropped files/folders."""
+        if event.mimeData().hasUrls():
+            urls = event.mimeData().urls()
+            if urls:
+                # Take the first file/folder path
+                path = urls[0].toLocalFile()
+                self.setText(path)
+                event.acceptProposedAction()
+                # Trigger the parent window's update logic
+                parent = self.parent()
+                while parent:
+                    if isinstance(parent, MainWindow):
+                        parent._update_input_options()
+                        parent._update_action_state()
+                        break
+                    parent = parent.parent()
+        else:
+            event.ignore()
 
 
 class StarsCentralWidget(QWidget):
@@ -326,9 +361,9 @@ class MainWindow(QMainWindow):
         form = QFormLayout()
 
         # Single picker button (auto-detects file vs folder)
-        self.input_path_edit = QLineEdit()
+        self.input_path_edit = DragDropLineEdit()
         self.input_path_edit.setReadOnly(True)
-        self.input_path_edit.setPlaceholderText("Choose a file or folder…")
+        self.input_path_edit.setPlaceholderText("Drag & drop or click to select…")
         self.input_path_edit.setMinimumHeight(32)
 
         self.pick_input_btn = QPushButton("📂 Select File/Folder")
