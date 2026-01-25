@@ -65,7 +65,7 @@ class MediaScrubber:
                 error_category=ErrorCategory.INPUT_ERROR,
                 fix_hint="Verify the file path is correct"
             )
-        
+
         if not os.access(input_path, os.R_OK):
             return ScrubResult(
                 result_type=ResultType.ERROR,
@@ -74,7 +74,7 @@ class MediaScrubber:
                 error_category=ErrorCategory.PERMISSION_ERROR,
                 fix_hint="Check file permissions or run with appropriate privileges"
             )
-        
+
         # Check ffmpeg availability
         if not cls._ffmpeg_available(ffmpeg_cmd):
             return ScrubResult(
@@ -82,7 +82,7 @@ class MediaScrubber:
                 input_path=input_path,
                 reason=f"ffmpeg not available at '{ffmpeg_cmd}' (required for audio/video scrubbing)",
             )
-        
+
         # Validate output directory
         output_path.parent.mkdir(parents=True, exist_ok=True)
         if not os.access(output_path.parent, os.W_OK):
@@ -118,10 +118,10 @@ class MediaScrubber:
                 ]
 
                 proc = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-                
+
                 if proc.returncode != 0:
                     stderr = proc.stderr.strip()
-                    
+
                     # Parse ffmpeg error for better categorization
                     if "No such file or directory" in stderr or "does not exist" in stderr:
                         error_category = ErrorCategory.INPUT_ERROR
@@ -138,7 +138,7 @@ class MediaScrubber:
                     else:
                         error_category = ErrorCategory.PROCESSING_ERROR
                         fix_hint = "Check ffmpeg output for details"
-                    
+
                     error_msg = stderr or "ffmpeg failed to scrub metadata"
                     return ScrubResult(
                         result_type=ResultType.ERROR,
@@ -167,7 +167,7 @@ class MediaScrubber:
                     error_category=ErrorCategory.PROCESSING_ERROR,
                     fix_hint="File may be too large or corrupted. Try smaller files."
                 )
-            
+
             except OSError as e:
                 if e.errno == errno.ENOSPC:
                     error_msg = "No space left on device"
@@ -178,7 +178,7 @@ class MediaScrubber:
                 else:
                     error_msg = f"I/O error: {e}"
                     hint = "Check filesystem and disk health"
-                
+
                 return ScrubResult(
                     result_type=ResultType.ERROR,
                     input_path=input_path,
@@ -195,7 +195,7 @@ class MediaScrubber:
                 error_category=ErrorCategory.PROCESSING_ERROR,
                 fix_hint="Report this error if it persists"
             )
-        
+
         finally:
             # Ensure temp file cleanup
             if tmp_path and tmp_path.exists():

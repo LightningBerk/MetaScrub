@@ -84,30 +84,30 @@ class StarsCentralWidget(QWidget):
         """Paint stars background, then let UI render."""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing, True)
-        
+
         # Paint the background color first
         painter.fillRect(self.rect(), QColor(Colors.BACKGROUND))
-        
+
         # Draw stars with prominent glow
         for star in self.stars:
             # Create radial gradient glow for each star
             glow_radius = star.radius * 8  # Larger glow area
             gradient = QRadialGradient(star.x, star.y, glow_radius)
-            
+
             # Bright magenta core and purple glow
             core_color = QColor("#ff006e")  # Bright magenta like logo
             core_color.setAlphaF(star.current_opacity * 0.8)
-            
+
             glow_color = QColor("#bb00dd")  # Purple glow
             glow_color.setAlphaF(star.current_opacity * 0.4)
-            
+
             edge_color = QColor("#8800bb")
             edge_color.setAlphaF(star.current_opacity * 0.1)
-            
+
             gradient.setColorAt(0.0, core_color)
             gradient.setColorAt(0.4, glow_color)
             gradient.setColorAt(1.0, edge_color)
-            
+
             painter.setBrush(gradient)
             painter.setPen(Qt.NoPen)
             # Draw larger star
@@ -117,9 +117,9 @@ class StarsCentralWidget(QWidget):
                 int(glow_radius * 2),
                 int(glow_radius * 2),
             )
-        
+
         painter.end()
-        
+
         # Let parent class render UI widgets on top
         super().paintEvent(event)
 
@@ -130,7 +130,7 @@ class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("ScrubMeta")
-        
+
         # Set window icon to crystal ball emoji
         pixmap = QPixmap(64, 64)
         pixmap.fill(Qt.transparent)
@@ -139,7 +139,7 @@ class MainWindow(QMainWindow):
         painter.drawText(pixmap.rect(), Qt.AlignCenter, "🔮")
         painter.end()
         self.setWindowIcon(QIcon(pixmap))
-        
+
         self.setMinimumSize(1200, 700)
         QCoreApplication.setOrganizationName("scrubmeta")
         QCoreApplication.setApplicationName("ScrubMeta")
@@ -147,14 +147,14 @@ class MainWindow(QMainWindow):
         self.settings = QSettings()
         self.thread: QThread | None = None
         self.worker: ScrubWorker | None = None
-        
+
         # Initialize stars with deterministic seed only once
         random.seed(42)
         self.stars: list[Star] = []
         self._generate_stars_internal()
         # Now let random be truly random for drift
         random.seed()
-        
+
         # Animation timer for stars - faster update for smooth motion
         self.stars_timer = QTimer()
         self.stars_timer.timeout.connect(self._update_stars)
@@ -167,7 +167,7 @@ class MainWindow(QMainWindow):
     # UI construction
     def _build_ui(self) -> None:
         """Build the main UI with header, two-column layout, and status bar."""
-        
+
         # Create central widget with stars background painting
         central = StarsCentralWidget(self.stars)
         main_layout = QVBoxLayout()
@@ -185,7 +185,7 @@ class MainWindow(QMainWindow):
 
         central.setLayout(main_layout)
         self.setCentralWidget(central)
-        
+
         # Store reference for updates
         self.central_widget = central
 
@@ -194,7 +194,7 @@ class MainWindow(QMainWindow):
         header = QWidget()
         header.setObjectName("headerBar")
         header.setFixedHeight(70)
-        
+
         layout = QHBoxLayout()
         layout.setContentsMargins(24, 12, 24, 12)
         layout.setSpacing(16)
@@ -210,7 +210,7 @@ class MainWindow(QMainWindow):
         """)
         logo_label.setMinimumSize(60, 60)
         logo_label.setAlignment(Qt.AlignCenter)
-        
+
         # Apply pulsing animation
         self._animate_logo(logo_label)
 
@@ -218,7 +218,7 @@ class MainWindow(QMainWindow):
         title_layout = QVBoxLayout()
         title_layout.setSpacing(2)  # Tight spacing between title and subtitle
         title_layout.setContentsMargins(0, 0, 0, 0)
-        
+
         title_label = QLabel("ScrubMeta")
         title_label.setStyleSheet(f"font-size: 36px; font-weight: bold; color: {Colors.PRIMARY}; line-height: 1.0;")
         subtitle_label = QLabel("Remove metadata safely — single or batch")
@@ -257,20 +257,20 @@ class MainWindow(QMainWindow):
         self.glow_effect.setYOffset(0)
         self.glow_effect.setColor(QColor("#ff006e"))  # Magenta glow
         logo.setGraphicsEffect(self.glow_effect)
-        
+
         # Animate the blur radius to create pulsing glow
         self.glow_animation_in = QPropertyAnimation(self.glow_effect, b"blurRadius")
         self.glow_animation_in.setDuration(1500)
         self.glow_animation_in.setStartValue(5)
         self.glow_animation_in.setEndValue(30)
         self.glow_animation_in.setEasingCurve(QEasingCurve.InOutQuad)
-        
+
         self.glow_animation_out = QPropertyAnimation(self.glow_effect, b"blurRadius")
         self.glow_animation_out.setDuration(1500)
         self.glow_animation_out.setStartValue(30)
         self.glow_animation_out.setEndValue(5)
         self.glow_animation_out.setEasingCurve(QEasingCurve.InOutQuad)
-        
+
         # Create looping sequence
         self.animation_group = QSequentialAnimationGroup()
         self.animation_group.addAnimation(self.glow_animation_in)
@@ -287,7 +287,7 @@ class MainWindow(QMainWindow):
 
         # Left column: Configuration
         left_column = self._build_left_column()
-        
+
         # Right column: Results and Progress
         right_column = self._build_right_column()
 
@@ -310,7 +310,7 @@ class MainWindow(QMainWindow):
         scroll.setWidgetResizable(True)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        
+
         layout = QVBoxLayout()
         layout.setSpacing(12)
 
@@ -341,14 +341,14 @@ class MainWindow(QMainWindow):
         bar = QWidget()
         bar.setObjectName("statusBar")
         bar.setFixedHeight(40)
-        
+
         layout = QHBoxLayout()
         layout.setContentsMargins(24, 8, 24, 8)
         layout.setSpacing(12)
 
         self.summary_label = QLabel("Ready")
         self.summary_label.setStyleSheet(f"color: {Colors.TEXT_SECONDARY}; font-size: 11px;")
-        
+
         layout.addWidget(self.summary_label, 1)
 
         bar.setLayout(layout)
@@ -434,7 +434,7 @@ class MainWindow(QMainWindow):
 
         ffmpeg_label = QLabel("Audio/Video")
         ffmpeg_label.setStyleSheet(f"color: {Colors.TEXT_SECONDARY}; font-size: 10px;")
-        
+
         layout.addWidget(ffmpeg_label)
         layout.addLayout(ffmpeg_row)
 
@@ -457,11 +457,11 @@ class MainWindow(QMainWindow):
         self.scrub_btn.setMinimumHeight(40)
         self.scrub_btn.setMinimumWidth(200)
         self.scrub_btn.setDefault(True)
-        
+
         self.cancel_btn = QPushButton("⏹ Cancel")
         self.cancel_btn.setMinimumHeight(40)
         self.cancel_btn.setEnabled(False)
-        
+
         self.open_output_btn = QPushButton("📂 Open Output")
         self.open_output_btn.setMinimumHeight(40)
 
@@ -478,7 +478,7 @@ class MainWindow(QMainWindow):
 
     def _build_progress_row(self) -> QHBoxLayout:
         row = QHBoxLayout()
-        
+
         # Current file and status
         info_layout = QVBoxLayout()
         self.current_file_label = QLabel("Idle")
@@ -488,12 +488,12 @@ class MainWindow(QMainWindow):
         self.progress.setMaximum(1)
         self.progress.setValue(0)
         self.progress.setMinimumHeight(24)
-        
+
         info_layout.addWidget(self.current_file_label)
         info_layout.addWidget(self.progress)
-        
+
         row.addLayout(info_layout)
-        
+
         return row
 
     def _build_results_panel(self) -> QWidget:
@@ -503,16 +503,16 @@ class MainWindow(QMainWindow):
 
         # Control bar
         controls_row = QHBoxLayout()
-        
+
         filter_label = QLabel("Filter:")
         filter_label.setStyleSheet(f"color: {Colors.TEXT_SECONDARY}; font-size: 11px;")
         controls_row.addWidget(filter_label)
-        
+
         self.filter_combo = QComboBox()
         self.filter_combo.addItems(["All", "SUCCESS", "SKIP", "ERROR"])
         self.filter_combo.setMaximumWidth(120)
         controls_row.addWidget(self.filter_combo)
-        
+
         controls_row.addStretch()
 
         self.copy_log_btn = QPushButton("📋 Copy")
@@ -576,10 +576,10 @@ class MainWindow(QMainWindow):
         """Update recursive/structure options based on input type."""
         input_path = self._input_path()
         is_folder = input_path and input_path.is_dir()
-        
+
         self.recursive_cb.setEnabled(is_folder)
         self.keep_structure_cb.setEnabled(is_folder)
-        
+
         if not is_folder:
             self.recursive_cb.setChecked(False)
             self.keep_structure_cb.setChecked(False)
@@ -755,7 +755,7 @@ class MainWindow(QMainWindow):
             font-weight: bold;
             font-size: 10px;
         """
-        
+
         if status == "idle":
             style += f"border: 1px solid {Colors.TEXT_SECONDARY}; color: {Colors.TEXT_SECONDARY};"
         elif status == "processing":
@@ -764,7 +764,7 @@ class MainWindow(QMainWindow):
             style += f"border: 1px solid {Colors.SUCCESS}; color: {Colors.SUCCESS};"
         elif status == "error":
             style += f"border: 1px solid {Colors.ERROR}; color: {Colors.ERROR};"
-        
+
         self.status_pill.setStyleSheet(style)
 
     # Results helpers
@@ -856,10 +856,10 @@ class MainWindow(QMainWindow):
         else:
             width = 1200
             height = 700
-        
+
         # More stars, more visible
         star_count = max(60, min(150, (width * height) // 10000))
-        
+
         self.stars = [
             Star(
                 x=random.uniform(0, width),
@@ -881,7 +881,7 @@ class MainWindow(QMainWindow):
         else:
             width = 1200
             height = 700
-        
+
         # Update existing stars' boundaries
         for star in self.stars:
             star.width = float(width)

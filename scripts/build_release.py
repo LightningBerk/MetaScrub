@@ -32,10 +32,14 @@ def run(cmd: list[str]) -> None:
 
 
 def ensure_pyinstaller() -> None:
+    """Verify PyInstaller is installed."""
     try:
-        import PyInstaller  # noqa: F401
+        import PyInstaller
+        _ = PyInstaller  # Silence unused import warning
     except ImportError as exc:  # pragma: no cover - tooling guard
-        raise SystemExit("PyInstaller is not installed. Activate venv and run: pip install pyinstaller") from exc
+        raise SystemExit(
+            "PyInstaller is not installed. Activate venv and run: pip install pyinstaller"
+        ) from exc
 
 
 def icon_arg(path: Path) -> list[str]:

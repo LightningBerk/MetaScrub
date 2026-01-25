@@ -74,3 +74,11 @@ output/
 test_output/
 tmp/
 temp/
+.tmp/
+execution/
+
+# Development/AI directives (not for distribution)
+directives/
+
+# Bundled binaries (users should download separately)
+ffmpeg/

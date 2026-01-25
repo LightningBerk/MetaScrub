@@ -12,7 +12,7 @@ from .utils.result import ScrubResult, ResultType, ErrorCategory
 def print_summary(results: List[ScrubResult]) -> None:
     """
     Print summary of scrubbing results.
-    
+
     Args:
         results: List of ScrubResults
     """
@@ -20,7 +20,7 @@ def print_summary(results: List[ScrubResult]) -> None:
     success = sum(1 for r in results if r.result_type == ResultType.SUCCESS)
     skipped = sum(1 for r in results if r.result_type == ResultType.SKIP)
     errors = sum(1 for r in results if r.result_type == ResultType.ERROR)
-    
+
     print("\n" + "=" * 60)
     print("SUMMARY")
     print("=" * 60)
@@ -28,7 +28,7 @@ def print_summary(results: List[ScrubResult]) -> None:
     print(f"Successfully scrubbed: {success}")
     print(f"Skipped:        {skipped}")
     print(f"Errors:         {errors}")
-    
+
     # Break down errors by category
     if errors > 0:
         error_results = [r for r in results if r.result_type == ResultType.ERROR]
@@ -36,39 +36,39 @@ def print_summary(results: List[ScrubResult]) -> None:
         for result in error_results:
             cat = result.error_category or ErrorCategory.PROCESSING_ERROR
             category_counts[cat] = category_counts.get(cat, 0) + 1
-        
+
         print("\nError breakdown by category:")
         for category, count in sorted(category_counts.items(), key=lambda x: x[1], reverse=True):
             print(f"  {category.value}: {count}")
-    
+
     print("=" * 60)
 
 
 def scrub_command(args: argparse.Namespace) -> int:
     """
     Execute the scrub command.
-    
+
     Args:
         args: Parsed command-line arguments
-        
+
     Returns:
         Exit code (0 for success, 1 for failure)
     """
     input_path = Path(args.input_path).resolve()
     output_dir = Path(args.out).resolve()
-    
+
     # Validate input
     if not input_path.exists():
         print(f"ERROR: Input path does not exist: {input_path}")
         return 1
-    
+
     # Create output directory
     try:
         output_dir.mkdir(parents=True, exist_ok=True)
     except Exception as e:
         print(f"ERROR: Failed to create output directory: {e}")
         return 1
-    
+
     # Run scrubber through shared core
     results: List[ScrubResult] = []
 
@@ -90,7 +90,7 @@ def scrub_command(args: argparse.Namespace) -> int:
         callbacks=callbacks,
         cancel_token=cancel_token,
     )
-    
+
     if summary.total == 0:
         print(f"No supported files found in: {input_path}")
         return 0
@@ -109,9 +109,9 @@ def main() -> None:
         prog="scrubmeta",
         description="Remove metadata from images, PDFs, Office docs, and audio/video files, writing clean copies to an output directory."
     )
-    
+
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    
+
     # Scrub command
     scrub_parser = subparsers.add_parser("scrub", help="Scrub metadata from files")
     scrub_parser.add_argument(
@@ -148,9 +148,9 @@ def main() -> None:
         default="ffmpeg",
         help="Path or command name for ffmpeg (used for audio/video scrubbing; default: ffmpeg in PATH)",
     )
-    
+
     args = parser.parse_args()
-    
+
     if args.command == "scrub":
         sys.exit(scrub_command(args))
     else:

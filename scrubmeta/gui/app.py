@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import sys
-from PySide6.QtCore import QCoreApplication, Qt
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QFont
 from PySide6.QtWidgets import QApplication
 
@@ -13,11 +13,10 @@ from .theme import apply_theme
 
 def main() -> None:
     """Run the GUI application with synthwave theme."""
-    QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
-    QCoreApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+    # Note: High DPI scaling is enabled by default in Qt 6
 
     app = QApplication(sys.argv)
-    
+
     # Set application icon for dock/taskbar
     pixmap = QPixmap(128, 128)
     pixmap.fill(Qt.transparent)
@@ -26,10 +25,10 @@ def main() -> None:
     painter.drawText(pixmap.rect(), Qt.AlignCenter, "🔮")
     painter.end()
     app.setWindowIcon(QIcon(pixmap))
-    
+
     # Apply synthwave theme
     apply_theme(app)
-    
+
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
