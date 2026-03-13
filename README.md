@@ -22,9 +22,53 @@ A cross-platform Python tool for stripping metadata from files. Supports images,
 Standalone executables for Windows, macOS, and Linux are published as
 [GitHub Releases](https://github.com/LightningBerk/MetaScrub/releases/latest).
 
-1. Go to the **Releases** page.
-2. Download the binary for your OS (`metascrub-linux`, `metascrub-macos`, or `metascrub-windows.exe`).
-3. Make it executable (Linux/macOS: `chmod +x metascrub-*`) and run it.
+#### Linux
+
+```bash
+# Download the binary
+curl -Lo metascrub https://github.com/LightningBerk/MetaScrub/releases/latest/download/metascrub-linux
+
+# Make it executable and move to your PATH
+chmod +x metascrub
+sudo mv metascrub /usr/local/bin/
+
+# Verify
+metascrub --help
+```
+
+#### macOS
+
+```bash
+# Download the binary
+curl -Lo metascrub https://github.com/LightningBerk/MetaScrub/releases/latest/download/metascrub-macos
+
+# Make it executable and move to your PATH
+chmod +x metascrub
+sudo mv metascrub /usr/local/bin/
+
+# macOS may block unsigned binaries — remove the quarantine flag
+sudo xattr -rd com.apple.quarantine /usr/local/bin/metascrub
+
+# Verify
+metascrub --help
+```
+
+#### Windows
+
+1. Download `metascrub-windows.exe` from the
+   [latest release](https://github.com/LightningBerk/MetaScrub/releases/latest).
+2. Rename it to `metascrub.exe` (optional, for convenience).
+3. Move it to a folder that is on your `PATH`, **or** add its folder to your
+   PATH:
+   - Open **Settings → System → About → Advanced system settings →
+     Environment Variables**.
+   - Under **User variables**, edit `Path` and add the folder containing
+     `metascrub.exe`.
+4. Open a **new** terminal and verify:
+
+```powershell
+metascrub --help
+```
 
 > Releases are created automatically whenever a version tag is pushed
 > (e.g. `git tag v1.0.0 && git push --tags`).
