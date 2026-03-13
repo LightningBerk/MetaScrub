@@ -226,7 +226,7 @@ Potential improvements documented in `ERROR_HANDLING.md`:
 - Parallel processing with error aggregation
 - Debug mode with full stack traces
 - Integration test suite for all error paths
-- GUI error display enhancements (tooltips, expandable details)
+- TUI error display enhancements (expanded details columns)
 
 ## Conclusion
 

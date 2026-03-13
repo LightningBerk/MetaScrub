@@ -256,18 +256,12 @@ scrubmeta scrub image.jpg --out /Volumes/Full
 #   Fix: Free up disk space on the output drive
 ```
 
-## GUI Error Display
+## TUI Error Display
 
-The GUI (`scrubmeta/gui/`) will display:
-- Error messages in the results table
-- Error category as tooltip or expandable detail
-- Fix hints in expandable error details panel
-
-**Future Enhancements:**
-- Error icon with color coding by category
-- Expandable error details with full stack traces (debug mode)
-- Batch error filtering by category
-- Export error report with categories and hints
+The TUI (`scrubmeta/tui/`) will display:
+- Error messages directly in the results DataTable.
+- Status blocks color-coded as `[red]ERROR[/red]` or `[yellow]SKIP[/yellow]`.
+- Fix hints combined directly into the details column natively.
 
 ## Error Statistics
 

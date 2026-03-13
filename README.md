@@ -1,13 +1,13 @@
 # MetaScrub
 
-A Python tool for removing metadata from files. Supports images, PDFs, Office documents, audio, and video files. Available as both CLI and GUI.
+A Python tool for removing metadata from files. Supports images, PDFs, Office documents, audio, and video files. Available as both a Command-Line Interface (CLI) and an interactive Terminal User Interface (TUI).
 
 ## Features
 
 - **Multiple file types**: JPG/PNG/WebP, PDF, DOCX/XLSX/PPTX, MP4/MOV/MP3/etc
 - **Batch processing**: Single files or entire directories
 - **Safe operations**: Never modifies originals, uses atomic writes
-- **Cross-platform GUI**: Desktop app built with PySide6/Qt
+- **Cross-platform TUI**: Interactive terminal app built with Textual
 - **Flexible output**: Preserve directory structure or flatten
 - **Robust error handling**: Clear messages with actionable recovery hints
 
@@ -19,7 +19,7 @@ A Python tool for removing metadata from files. Supports images, PDFs, Office do
 
 > **Note**: PySide6 (GUI framework) currently supports Python up to 3.13. If you have Python 3.14+, use Python 3.12 instead.
 
-### macOS one-click (GUI)
+### macOS one-click (TUI)
 
 For the easiest path on macOS, use the included installer/launcher:
 
@@ -32,7 +32,7 @@ What it does:
 - Creates/uses `.venv`, installs MetaScrub deps.
 - Checks for `ffmpeg`; if missing and Homebrew is available, runs `brew install ffmpeg`.
 - If Homebrew is not installed, it exits with a clear message (install Homebrew, then rerun).
-- Launches the GUI when setup is complete.
+- Launches the TUI when setup is complete.
 
 Tip: If your default Python is 3.14+, run with a supported interpreter:
 `PYTHON_BIN=python3.12 ./install_and_run.command`
@@ -77,17 +77,17 @@ scrubmeta scrub documents/ --out cleaned/ --dry-run
 scrubmeta scrub archive/ --out cleaned/ --recursive --keep-structure
 ```
 
-### 3. Run GUI
+### 3. Run TUI
 
 ```bash
-python -m scrubmeta.gui
+scrubmeta tui
 ```
 
-**GUI Features:**
-- Pick file/folder, choose output directory
-- Progress bar, results table with filters
-- Export reports (CSV/JSON), open output folder
-- Settings persist across sessions
+**TUI Features:**
+- Pick file/folder using a built-in interactive `DirectoryTree` browser
+- Visual checkboxes (`✓` / `✗`) for rapid configuration
+- Progress bar, results table with real-time status colors
+- Seamlessly integrates with standard terminal workflows
 
 ### 4. Run Tests
 
@@ -146,21 +146,17 @@ scrubmeta scrub media/ --out cleaned/ --ffmpeg-path /usr/local/bin/ffmpeg
 
 ---
 
-## Build Standalone App (Optional)
+## Download Standalone App
 
-Package GUI as standalone executable using PyInstaller:
+Don't want to install Python? **Pre-built standalone executables** for Windows (`.exe`), macOS, and Linux are automatically compiled on every commit via GitHub Actions.
 
-```bash
-# Install PyInstaller
-pip install pyinstaller
+1. Navigate to the **Actions** tab on the GitHub repository.
+2. Click the latest successful workflow run for `Build Standalone Executables`.
+3. Scroll down to the **Artifacts** section at the bottom.
+4. Download the `.zip` file for your operating system.
+5. Extract it and run the included `metascrub` binary!
 
-# Build
-pyinstaller --onefile --windowed --name MetaScrub scrubmeta/gui/app.py
-
-# Output in dist/MetaScrub (or dist/MetaScrub.exe on Windows)
-```
-
-**Note**: Built executables go to `dist/` (ignored by git).
+(Executables are built using `pyinstaller --onefile scrubmeta/cli.py`)
 
 ---
 
@@ -175,11 +171,10 @@ metaScrub/
 │   ├── __main__.py         # python -m scrubmeta
 │   ├── cli.py              # CLI entry point
 │   ├── core.py             # Shared scrubbing logic
-│   ├── gui/                # Desktop GUI
-│   │   ├── app.py
-│   │   ├── main_window.py
-│   │   ├── worker.py
-│   │   └── models.py
+│   ├── tui/                # Terminal User Interface
+│   │   ├── __init__.py
+│   │   ├── app.py          # TUI layout and app
+│   │   └── widgets.py      # Custom Textual widgets
 │   ├── scrubbers/          # File-type handlers
 │   │   ├── image_scrubber.py
 │   │   ├── pdf_scrubber.py
@@ -201,9 +196,9 @@ metaScrub/
 # 1. Verify CLI works
 scrubmeta scrub tests/fixtures/test_image.jpg --out /tmp/test_output 2>&1 | head -5
 
-# 2. Verify GUI launches
-python -m scrubmeta.gui &
-# Close window, verify no crash
+# 2. Verify TUI launches
+scrubmeta tui &
+# Close terminal app, verify no crash
 
 # 3. Test error handling (bad file)
 echo "not an image" > /tmp/bad.jpg
@@ -221,7 +216,7 @@ Core:
 - `Pillow>=10.0.0` - Image processing
 - `piexif>=1.1.3` - EXIF handling
 - `pikepdf>=8.0.0` - PDF manipulation (requires `qpdf` system library)
-- `PySide6>=6.6` - Qt GUI framework
+- `textual>=0.40.0` - TUI framework
 
 External:
 - `ffmpeg` - Audio/video metadata removal (binary, not Python package)
@@ -286,9 +281,9 @@ apt install ffmpeg   # Linux
 - Check file/directory permissions: `ls -la <path>`
 - Ensure output directory is writable
 
-**GUI won't launch:**
-- Verify PySide6 installed: `python -c "import PySide6; print('OK')"`
-- Check Python version: `python --version` (requires 3.8-3.13)
+**TUI won't launch:**
+- Verify Textual installed: `python -c "import textual; print('OK')"`
+- Check Python version: `python --version` (requires 3.8+)
 
 ---
 
@@ -308,26 +303,19 @@ MIT License - Use at your own risk. Always keep backups of important files.
 
 **Last Updated**: December 2025 | **Version**: 1.0.0
 
-## Usage (GUI)
+## Usage (TUI)
 
-Launch the desktop app (PySide6/Qt):
+Launch the interactive Terminal UI (Textual):
 
 ```bash
-python -m scrubmeta.gui
+scrubmeta tui
 ```
 
 Features:
-- Pick single file or folder (batch), choose output directory
-- Options: recursive, keep structure, overwrite, dry-run
-- Progress bar, status text, per-file results table with filters
-- Copy log / export report (CSV/JSON) / open output folder
-- Cancel support; settings persist via `QSettings`
-
-Packaging (example):
-
-```bash
-pyinstaller --onefile --windowed -n ScrubMeta scrubmeta/gui/app.py
-```
+- Pick single file or folder (batch) interactively using a `DirectoryTree` browser.
+- Options: recursive, keep structure, overwrite, dry-run via visual custom checkboxes.
+- Progress bar, status text, and real-time per-file results table colored by status constraints.
+- Fully operational without leaving the command line.
 
 ## Supported File Types
 
@@ -417,14 +405,11 @@ metaScrub/
 │   ├── __init__.py
 │   ├── __main__.py          # Module entry point
 │   ├── cli.py               # CLI implementation
-│   ├── core.py              # Shared scrub API (CLI + GUI)
-│   ├── gui/
+│   ├── core.py              # Shared scrub API
+│   ├── tui/
 │   │   ├── __init__.py
-│   │   ├── __main__.py      # python -m scrubmeta.gui
-│   │   ├── app.py           # GUI entry point
-│   │   ├── main_window.py   # UI layout and interactions
-│   │   ├── worker.py        # Background worker
-│   │   └── models.py        # Table models / filters
+│   │   ├── app.py           # TUI entry point
+│   │   └── widgets.py       # Modal & VisualCheckbox definition
 │   ├── scrubbers/
 │   │   ├── __init__.py
 │   │   ├── image_scrubber.py   # JPG/PNG/WebP handler
@@ -452,7 +437,7 @@ python -m pytest tests/
 - **Pillow** (>=10.0.0): Image processing
 - **piexif** (>=1.1.3): EXIF metadata handling
 - **pikepdf** (>=8.0.0): PDF manipulation
-- **PySide6** (>=6.6): GUI
+- **textual** (>=0.40.0): Terminal UI framework
 - **ffmpeg**: required binary for audio/video scrubbing (use `--ffmpeg-path` to point to a custom binary)
 
 ## Future Enhancements (Not in v1)
