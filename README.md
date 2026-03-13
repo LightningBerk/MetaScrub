@@ -78,13 +78,13 @@ scrubmeta scrub media/ --out cleaned/ --ffmpeg-path /usr/local/bin/ffmpeg
 
 **CLI flags:**
 
-| Flag               | Description                                      |
-| ------------------ | ------------------------------------------------ |
-| `--recursive`      | Process subdirectories                            |
-| `--dry-run`        | Preview without writing                           |
+| Flag               | Description                                             |
+| ------------------ | ------------------------------------------------------- |
+| `--recursive`      | Process subdirectories                                  |
+| `--dry-run`        | Preview without writing                                 |
 | `--overwrite`      | Overwrite existing outputs (default: append `_clean_N`) |
-| `--keep-structure` | Mirror input directory tree in output             |
-| `--ffmpeg-path`    | Path to a custom `ffmpeg` binary                  |
+| `--keep-structure` | Mirror input directory tree in output                   |
+| `--ffmpeg-path`    | Path to a custom `ffmpeg` binary                        |
 
 ### TUI
 
@@ -100,13 +100,13 @@ scrubmeta tui
 
 ## Supported File Types
 
-| Type       | Extensions                                                     | Method                                     |
-| ---------- | -------------------------------------------------------------- | ------------------------------------------ |
-| **Images** | `.jpg`, `.jpeg`, `.png`, `.webp`                               | Pillow — strips EXIF, IPTC, XMP            |
-| **PDFs**   | `.pdf`                                                         | pikepdf — clears doc-info dict and XMP     |
-| **Office** | `.docx`, `.xlsx`, `.pptx`                                      | ZIP manipulation — removes `docProps/`     |
-| **Video**  | `.mp4`, `.mov`, `.mkv`, `.avi`, `.m4v`, `.webm`, `.mpg`, `.mpeg` | ffmpeg `-map_metadata -1 -c copy`          |
-| **Audio**  | `.mp3`, `.wav`, `.flac`, `.m4a`, `.aac`, `.ogg`, `.opus`       | ffmpeg `-map_metadata -1 -c copy`          |
+| Type       | Extensions                                                       | Method                                |
+| ---------- | ---------------------------------------------------------------- | ------------------------------------- |
+| **Images** | `.jpg`, `.jpeg`, `.png`, `.webp`                                 | Pillow — strips EXIF, IPTC, XMP       |
+| **PDFs**   | `.pdf`                                                           | pikepdf — clears doc-info and XMP     |
+| **Office** | `.docx`, `.xlsx`, `.pptx`                                        | ZIP manipulation — removes `docProps` |
+| **Video**  | `.mp4`, `.mov`, `.mkv`, `.avi`, `.m4v`, `.webm`, `.mpg`, `.mpeg` | ffmpeg `-map_metadata -1 -c copy`     |
+| **Audio**  | `.mp3`, `.wav`, `.flac`, `.m4a`, `.aac`, `.ogg`, `.opus`         | ffmpeg `-map_metadata -1 -c copy`     |
 
 ---
 
@@ -183,12 +183,12 @@ Errors:         1
 
 ## Troubleshooting
 
-| Problem                | Fix                                                                 |
-| ---------------------- | ------------------------------------------------------------------- |
-| PDF scrubbing fails    | Install `qpdf`: `brew install qpdf` / `apt install qpdf`           |
-| Audio/video skipped    | Install `ffmpeg`: `brew install ffmpeg` / `apt install ffmpeg`      |
-| Permission errors      | Check permissions with `ls -la`; ensure output dir is writable      |
-| TUI won't launch       | Verify Textual: `python -c "import textual; print('OK')"`          |
+| Problem             | Fix                                                              |
+| ------------------- | ---------------------------------------------------------------- |
+| PDF scrubbing fails | Install `qpdf`: `brew install qpdf` / `apt install qpdf`        |
+| Audio/video skipped | Install `ffmpeg`: `brew install ffmpeg` / `apt install ffmpeg`   |
+| Permission errors   | Check permissions with `ls -la`; ensure output dir is writable   |
+| TUI won't launch    | Verify Textual: `python -c "import textual; print('OK')"`       |
 
 ---
 
@@ -222,13 +222,13 @@ MetaScrub/
 
 ## Dependencies
 
-| Package                | Purpose                          |
-| ---------------------- | -------------------------------- |
-| `Pillow` ≥ 10.0       | Image processing                 |
-| `piexif` ≥ 1.1.3      | EXIF metadata handling           |
-| `pikepdf` ≥ 8.0       | PDF manipulation                 |
-| `textual` ≥ 0.40      | Terminal UI framework            |
-| `ffmpeg` *(system)*    | Audio/video metadata removal     |
+| Package             | Purpose                      |
+| ------------------- | ---------------------------- |
+| `Pillow` ≥ 10.0     | Image processing             |
+| `piexif` ≥ 1.1.3    | EXIF metadata handling       |
+| `pikepdf` ≥ 8.0     | PDF manipulation             |
+| `textual` ≥ 0.40    | Terminal UI framework        |
+| `ffmpeg` *(system)* | Audio/video metadata removal |
 
 ---
 
