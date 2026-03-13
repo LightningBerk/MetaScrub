@@ -262,6 +262,7 @@ See `docs/ERROR_HANDLING.md` for comprehensive error documentation.
 ## Troubleshooting
 
 **PDF scrubbing fails:**
+
 ```bash
 # Install qpdf system library
 # macOS:
@@ -271,6 +272,7 @@ apt install qpdf
 ```
 
 **Audio/video skipped:**
+
 ```bash
 # Install ffmpeg
 brew install ffmpeg  # macOS

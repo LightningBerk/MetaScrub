@@ -210,12 +210,14 @@ Error breakdown by category:
 ## Testing Error Paths
 
 ### Test File Not Found
+
 ```bash
 scrubmeta scrub /nonexistent/file.jpg --out /tmp/output
 # ERROR: Input path does not exist: /nonexistent/file.jpg
 ```
 
 ### Test Corrupted Image
+
 ```bash
 echo "not an image" > /tmp/bad.jpg
 scrubmeta scrub /tmp/bad.jpg --out /tmp/output
@@ -224,6 +226,7 @@ scrubmeta scrub /tmp/bad.jpg --out /tmp/output
 ```
 
 ### Test Permission Denied
+
 ```bash
 touch /tmp/test.jpg
 chmod 000 /tmp/test.jpg
@@ -233,6 +236,7 @@ scrubmeta scrub /tmp/test.jpg --out /tmp/output
 ```
 
 ### Test Missing Dependency
+
 ```bash
 # Uninstall pikepdf
 pip uninstall -y pikepdf
@@ -243,6 +247,7 @@ scrubmeta scrub document.pdf --out /tmp/output
 ```
 
 ### Test Disk Full (simulated)
+
 ```bash
 # Create a full disk image (macOS)
 hdiutil create -size 1m -fs HFS+ -volname "Full" /tmp/full.dmg

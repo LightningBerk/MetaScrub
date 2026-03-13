@@ -9,6 +9,7 @@ Comprehensive error handling has been implemented across all MetaScrub component
 ### 1. Core Infrastructure (`scrubmeta/utils/result.py`)
 
 **Added:**
+
 - `ErrorCategory` enum with 6 standard categories:
   - `INPUT_ERROR` - File not found, corrupted, unreadable
   - `PERMISSION_ERROR` - Access denied
@@ -25,6 +26,7 @@ Comprehensive error handling has been implemented across all MetaScrub component
 ### 2. Image Scrubber (`scrubmeta/scrubbers/image_scrubber.py`)
 
 **Hardening:**
+
 - ✅ Input validation (existence, readability)
 - ✅ Output directory validation (writability)
 - ✅ PIL-specific error handling:
@@ -38,6 +40,7 @@ Comprehensive error handling has been implemented across all MetaScrub component
 ### 3. PDF Scrubber (`scrubmeta/scrubbers/pdf_scrubber.py`)
 
 **Hardening:**
+
 - ✅ Dependency check with installation hint
   - Error: "pikepdf library not available"
   - Fix: "Install with: pip install pikepdf (requires qpdf system library)"
@@ -53,6 +56,7 @@ Comprehensive error handling has been implemented across all MetaScrub component
 ### 4. OOXML Scrubber (`scrubmeta/scrubbers/ooxml_scrubber.py`)
 
 **Hardening:**
+
 - ✅ Input validation (existence, readability)
 - ✅ Output directory validation (creation, writability)
 - ✅ zipfile-specific errors:
@@ -64,6 +68,7 @@ Comprehensive error handling has been implemented across all MetaScrub component
 ### 5. Media Scrubber (`scrubmeta/scrubbers/media_scrubber.py`)
 
 **Hardening:**
+
 - ✅ Input validation (existence, readability)
 - ✅ Output validation (directory creation, writability)
 - ✅ ffmpeg availability check (existing, returns SKIP with reason)
@@ -81,6 +86,7 @@ Comprehensive error handling has been implemented across all MetaScrub component
 ### 6. Core Orchestrator (`scrubmeta/core.py`)
 
 **Hardening:**
+
 - ✅ Pre-flight input validation before file discovery:
   - Path existence check → INPUT_ERROR / "Verify the path is correct"
   - Read permission check → PERMISSION_ERROR / "Check permissions or run with appropriate privileges"
@@ -94,15 +100,19 @@ Comprehensive error handling has been implemented across all MetaScrub component
 ### 7. CLI (`scrubmeta/cli.py`)
 
 **Enhancements:**
+
 - ✅ Already uses `result.format_line()` which now includes fix hints
 - ✅ Enhanced summary with error breakdown by category:
-  ```
+
+  ```text
   Error breakdown by category:
     input_error: 3
     permission_error: 1
   ```
+
 - ✅ Displays actionable fix hints for each error:
-  ```
+
+  ```text
   ERROR | /path/to/file.jpg | Not a valid image file or unsupported format
     Fix: Verify file is a valid JPG, PNG, or WebP image
   ```
@@ -110,6 +120,7 @@ Comprehensive error handling has been implemented across all MetaScrub component
 ### 8. Documentation
 
 **Created:**
+
 - `ERROR_HANDLING.md` - Comprehensive error handling documentation
   - Error category definitions
   - Error response structure
@@ -122,6 +133,7 @@ Comprehensive error handling has been implemented across all MetaScrub component
 ## Testing
 
 **Validation:**
+
 - ✅ All 14 existing tests pass with new error handling
 - ✅ Manual testing confirms enhanced error messages:
   - Non-existent file: Clear input error with validation
@@ -129,7 +141,8 @@ Comprehensive error handling has been implemented across all MetaScrub component
   - Permission denied: Categorized permission error
 
 **Test Coverage:**
-```
+
+```text
 tests/test_core.py::test_scrub_path_invokes_callbacks PASSED
 tests/test_core.py::test_cancel_stops_processing PASSED
 tests/test_scrubmeta.py::TestFileDiscovery::test_directory_discovery_non_recursive PASSED
@@ -151,12 +164,14 @@ tests/test_scrubmeta.py::TestMediaScrubber::test_scrub_without_ffmpeg PASSED
 ## Error Handling Statistics
 
 **Before Hardening:**
+
 - Generic error messages: "str(e)"
 - No error categorization
 - Limited actionable guidance
 - Inconsistent error handling across scrubbers
 
 **After Hardening:**
+
 - ✅ **6 standard error categories** for consistent classification
 - ✅ **15+ specific exception types** handled across all scrubbers
 - ✅ **100% actionable fix hints** - every error includes recovery guidance
@@ -171,12 +186,14 @@ tests/test_scrubmeta.py::TestMediaScrubber::test_scrub_without_ffmpeg PASSED
 ## Example Error Messages
 
 ### Before
-```
+
+```text
 ERROR | /tmp/bad.jpg | cannot identify image file '/tmp/bad.jpg'
 ```
 
 ### After
-```
+
+```text
 ERROR | /tmp/bad.jpg | Not a valid image file or unsupported format
   Fix: Verify file is a valid JPG, PNG, or WebP image
 
@@ -195,17 +212,20 @@ Error breakdown by category:
 7. `scrubmeta/cli.py` - Enhanced summary with error category breakdown
 
 **Files Created:**
+
 1. `ERROR_HANDLING.md` - Comprehensive documentation
 
 ## Benefits
 
 ### For Users
+
 - **Clear error messages** instead of cryptic exceptions
 - **Actionable fix hints** for every error condition
 - **Error categorization** helps identify systemic issues
 - **Better troubleshooting** with specific guidance
 
 ### For Developers
+
 - **Consistent error handling** across all scrubbers
 - **Standardized error categories** for classification
 - **Atomic operations** prevent partial writes
@@ -213,6 +233,7 @@ Error breakdown by category:
 - **Test coverage maintained** - no regressions
 
 ### For Production
+
 - **No unhandled exceptions** - robust crash prevention
 - **Graceful degradation** - specific errors don't crash entire batch
 - **Audit trail** - error categories enable analysis
@@ -221,6 +242,7 @@ Error breakdown by category:
 ## Future Enhancements
 
 Potential improvements documented in `ERROR_HANDLING.md`:
+
 - Structured JSON error logging for automation
 - Error retry with exponential backoff
 - Parallel processing with error aggregation
@@ -231,6 +253,7 @@ Potential improvements documented in `ERROR_HANDLING.md`:
 ## Conclusion
 
 The codebase now has production-grade error handling with:
+
 - ✅ Comprehensive coverage across all components
 - ✅ Categorized, actionable error messages
 - ✅ Atomic operations with guaranteed cleanup
