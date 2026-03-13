@@ -63,6 +63,6 @@ fi
 echo "[info] Installing MetaScrub dependencies (this may take a minute)..."
 python -m pip install -e . >/dev/null
 
-# Launch GUI
-echo "[info] Starting MetaScrub GUI..."
-python -m scrubmeta.gui
+# Launch TUI
+echo "[info] Starting MetaScrub TUI..."
+python -m scrubmeta.tui.app

@@ -64,6 +64,6 @@ if ! command -v ffmpeg >/dev/null 2>&1; then
     fi
 fi
 
-# Launch GUI
-echo "[INFO] Starting MetaScrub..."
-python -m scrubmeta.gui
+# Launch TUI
+echo "[INFO] Starting MetaScrub TUI..."
+python -m scrubmeta.tui.app

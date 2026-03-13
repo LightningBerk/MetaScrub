@@ -1,4 +1,4 @@
-"""Core scrubbing API shared by CLI and GUI."""
+"""Core scrubbing API shared by CLI and TUI."""
 
 from __future__ import annotations
 

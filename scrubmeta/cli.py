@@ -112,6 +112,15 @@ def main() -> None:
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
+    # TUI command
+    tui_parser = subparsers.add_parser("tui", help="Launch the Textual Terminal UI")
+    tui_parser.add_argument(
+        "input_path",
+        nargs="?",
+        default="",
+        help="Optional input path to pre-fill in the TUI",
+    )
+
     # Scrub command
     scrub_parser = subparsers.add_parser("scrub", help="Scrub metadata from files")
     scrub_parser.add_argument(
@@ -153,6 +162,11 @@ def main() -> None:
 
     if args.command == "scrub":
         sys.exit(scrub_command(args))
+    elif args.command == "tui":
+        from .tui.app import MetaScrubTUI
+        app = MetaScrubTUI(initial_input=args.input_path)
+        app.run()
+        sys.exit(0)
     else:
         parser.print_help()
         sys.exit(1)

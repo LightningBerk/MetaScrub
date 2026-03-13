@@ -102,8 +102,8 @@ IF !ERRORLEVEL! EQU 0 (
 :LAUNCH_APP
 
 REM Launch the application
-echo [INFO] Starting MetaScrub...
-python -m scrubmeta.gui
+echo "[INFO] Starting MetaScrub TUI..."
+python -m scrubmeta.tui.app
 
 IF %ERRORLEVEL% NEQ 0 (
     echo [ERROR] Application exited with error code %ERRORLEVEL%
