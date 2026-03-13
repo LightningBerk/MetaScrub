@@ -114,7 +114,7 @@ class TestOutputManager(unittest.TestCase):
         
         output_path = manager.get_output_path(input_path)
         
-        self.assertEqual(output_path, self.output_dir / "file.jpg")
+        self.assertEqual(output_path, self.output_dir / "file_scrubbed.jpg")
     
     def test_structured_output_path(self):
         """Test output path with structure preservation."""
@@ -124,14 +124,14 @@ class TestOutputManager(unittest.TestCase):
         
         output_path = manager.get_output_path(input_path, base_dir)
         
-        self.assertEqual(output_path, self.output_dir / "subdir" / "file.jpg")
+        self.assertEqual(output_path, self.output_dir / "subdir" / "file_scrubbed.jpg")
     
     def test_collision_handling_no_overwrite(self):
         """Test collision handling when overwrite is disabled."""
         manager = OutputManager(self.output_dir, overwrite=False)
         
-        # Create existing file
-        existing = self.output_dir / "test.jpg"
+        # Create existing file with _scrubbed name
+        existing = self.output_dir / "test_scrubbed.jpg"
         existing.touch()
         
         input_path = Path("/some/path/test.jpg")
@@ -139,15 +139,15 @@ class TestOutputManager(unittest.TestCase):
         
         # Should generate unique name
         self.assertNotEqual(output_path, existing)
-        self.assertTrue(output_path.name.startswith("test_clean_"))
+        self.assertTrue(output_path.name.startswith("test_scrubbed"))
         self.assertTrue(output_path.name.endswith(".jpg"))
     
     def test_collision_handling_with_overwrite(self):
         """Test collision handling when overwrite is enabled."""
         manager = OutputManager(self.output_dir, overwrite=True)
         
-        # Create existing file
-        existing = self.output_dir / "test.jpg"
+        # Create existing file with _scrubbed name
+        existing = self.output_dir / "test_scrubbed.jpg"
         existing.touch()
         
         input_path = Path("/some/path/test.jpg")

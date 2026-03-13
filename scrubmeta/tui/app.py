@@ -150,17 +150,37 @@ class MetaScrubTUI(App):
                     self.query_one("#output-dir", Input).value = path
             self.push_screen(SelectPathModal("Select Output Directory"), set_output)
 
+    @staticmethod
+    def _sanitize_path(raw: str) -> str:
+        """Strip file:// URIs and surrounding quotes from drag-and-drop input."""
+        s = raw.strip().strip("'\"")
+        for prefix in ("file:///", "file://"):
+            if s.startswith(prefix):
+                s = s[len(prefix):]
+                # On Linux/macOS the path should start with /
+                if not s.startswith("/"):
+                    s = "/" + s
+                break
+        return s
+
     def start_scrubbing(self) -> None:
         """Start the scrubbing process."""
-        input_path_str = self.query_one("#input-path", Input).value.strip()
-        output_dir_str = self.query_one("#output-dir", Input).value.strip()
+        input_path_str = self._sanitize_path(self.query_one("#input-path", Input).value)
+        output_dir_str = self._sanitize_path(self.query_one("#output-dir", Input).value)
 
-        if not input_path_str or not output_dir_str:
-            self.query_one(STATUS_LABEL_ID, Label).update("[red]Error: Input and Output paths are required.[/red]")
+        if not input_path_str:
+            self.query_one(STATUS_LABEL_ID, Label).update("[red]Error: Input path is required.[/red]")
             return
 
         input_path = Path(input_path_str)
-        output_dir = Path(output_dir_str)
+
+        # Default output dir: same directory as input
+        if output_dir_str:
+            output_dir = Path(output_dir_str)
+        elif input_path.is_dir():
+            output_dir = input_path
+        else:
+            output_dir = input_path.parent
 
         recursive = self.query_one("#check-recursive", VisualCheckbox).value
         keep_structure = self.query_one("#check-keep-structure", VisualCheckbox).value

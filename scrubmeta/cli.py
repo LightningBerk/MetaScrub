@@ -55,7 +55,14 @@ def scrub_command(args: argparse.Namespace) -> int:
         Exit code (0 for success, 1 for failure)
     """
     input_path = Path(args.input_path).resolve()
-    output_dir = Path(args.out).resolve()
+
+    # Default output dir: same directory as input
+    if args.out:
+        output_dir = Path(args.out).resolve()
+    elif input_path.is_dir():
+        output_dir = input_path
+    else:
+        output_dir = input_path.parent
 
     # Validate input
     if not input_path.exists():
@@ -129,8 +136,8 @@ def main() -> None:
     )
     scrub_parser.add_argument(
         "--out",
-        required=True,
-        help="Output directory for cleaned files"
+        default=None,
+        help="Output directory for cleaned files (default: same as input)"
     )
     scrub_parser.add_argument(
         "--recursive",

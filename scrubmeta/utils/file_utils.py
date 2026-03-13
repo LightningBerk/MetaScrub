@@ -90,6 +90,11 @@ class OutputManager:
             # Flat output - just use filename
             output_path = self.output_dir / input_path.name
 
+        # Always append _scrubbed suffix to clearly mark cleaned files
+        output_path = output_path.with_name(
+            f"{output_path.stem}_scrubbed{output_path.suffix}"
+        )
+
         # Handle collisions (protect against permission errors when checking)
         try:
             if not self.overwrite and output_path.exists():
@@ -122,9 +127,10 @@ class OutputManager:
         suffix = path.suffix
         parent = path.parent
 
-        counter = 1
+        counter = 2
         while True:
-            new_name = f"{stem}_clean_{counter}{suffix}"
+            # e.g. photo_scrubbed_2.jpg, photo_scrubbed_3.jpg
+            new_name = f"{stem}_{counter}{suffix}"
             new_path = parent / new_name
             try:
                 if not new_path.exists():

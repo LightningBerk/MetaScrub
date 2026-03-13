@@ -109,31 +109,34 @@ For **PDF** scrubbing, `pikepdf` requires the `qpdf` system library:
 ### CLI
 
 ```bash
-# Scrub a single file
+# Scrub a single file (output goes next to the original as photo_scrubbed.jpg)
+scrubmeta scrub photo.jpg
+
+# Scrub to a specific output directory
 scrubmeta scrub photo.jpg --out cleaned/
 
 # Scrub a folder recursively
 scrubmeta scrub photos/ --out cleaned/ --recursive
 
 # Dry-run (preview only)
-scrubmeta scrub documents/ --out cleaned/ --dry-run
+scrubmeta scrub documents/ --dry-run
 
 # Preserve directory structure in output
 scrubmeta scrub archive/ --out cleaned/ --recursive --keep-structure
-
-# Use a custom ffmpeg binary
-scrubmeta scrub media/ --out cleaned/ --ffmpeg-path /usr/local/bin/ffmpeg
 ```
 
 **CLI flags:**
 
-| Flag               | Description                                             |
-| ------------------ | ------------------------------------------------------- |
-| `--recursive`      | Process subdirectories                                  |
-| `--dry-run`        | Preview without writing                                 |
-| `--overwrite`      | Overwrite existing outputs (default: append `_clean_N`) |
-| `--keep-structure` | Mirror input directory tree in output                   |
-| `--ffmpeg-path`    | Path to a custom `ffmpeg` binary                        |
+| Flag               | Description                                                        |
+| ------------------ | ------------------------------------------------------------------ |
+| `--out DIR`        | Output directory (default: same directory as input)                |
+| `--recursive`      | Process subdirectories                                             |
+| `--dry-run`        | Preview without writing                                            |
+| `--overwrite`      | Overwrite existing outputs (default: append `_scrubbed_2`, etc.)   |
+| `--keep-structure` | Mirror input directory tree in output                              |
+| `--ffmpeg-path`    | Path to a custom `ffmpeg` binary                                   |
+
+Output files are always named `<original>_scrubbed.<ext>` so originals are never overwritten.
 
 ### TUI
 

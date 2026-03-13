@@ -42,7 +42,7 @@ def test_scrub_path_invokes_callbacks():
         assert summary.total == 1
         assert summary.success == 1
         assert results[0].result_type == ResultType.SUCCESS
-        assert (output_dir / input_file.name).exists()
+        assert (output_dir / "input_scrubbed.png").exists()
         assert events["scan"] == 1
         assert events["file_start"] == 1
         assert events["file_result"] == 1
