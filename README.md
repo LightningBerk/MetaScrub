@@ -1,347 +1,164 @@
 # MetaScrub
 
-A Python tool for removing metadata from files. Supports images, PDFs, Office documents, audio, and video files. Available as both a Command-Line Interface (CLI) and an interactive Terminal User Interface (TUI).
-
-## Features
-
-- **Multiple file types**: JPG/PNG/WebP, PDF, DOCX/XLSX/PPTX, MP4/MOV/MP3/etc
-- **Batch processing**: Single files or entire directories
-- **Safe operations**: Never modifies originals, uses atomic writes
-- **Cross-platform TUI**: Interactive terminal app built with Textual
-- **Flexible output**: Preserve directory structure or flatten
-- **Robust error handling**: Clear messages with actionable recovery hints
+A cross-platform Python tool for stripping metadata from files. Supports images, PDFs, Office documents, audio, and video. Available as a **CLI** and an interactive **Terminal UI (TUI)**.
 
 ---
 
-## Quick Start
+## Features
 
-**Requirements**: Python 3.8-3.13 (Python 3.12 recommended)
+- **Broad format support** — JPG, PNG, WebP, PDF, DOCX/XLSX/PPTX, MP4, MOV, MKV, MP3, FLAC, and more
+- **Batch processing** — scrub single files or entire directory trees
+- **Safe by design** — originals are never modified; atomic writes prevent corruption
+- **Interactive TUI** — built with [Textual](https://github.com/Textualize/textual); browse files, toggle options, and watch progress in-terminal
+- **Actionable errors** — every failure is categorized with a human-readable fix hint
+- **Pre-built binaries** — standalone executables for Windows, macOS, and Linux via GitHub Actions
 
-> **Note**: PySide6 (GUI framework) currently supports Python up to 3.13. If you have Python 3.14+, use Python 3.12 instead.
+---
 
-### macOS one-click (TUI)
+## Installation
 
-For the easiest path on macOS, use the included installer/launcher:
+### Option A — Download a standalone binary (no Python required)
 
-```bash
-chmod +x install_and_run.command
-./install_and_run.command
-```
+1. Go to the **Actions** tab on the [GitHub repository](https://github.com/LightningBerk/MetaScrub).
+2. Open the latest successful **Build Standalone Executables** run.
+3. Download the artifact `.zip` for your OS (Linux / macOS / Windows).
+4. Extract and run the `metascrub` binary.
 
-What it does:
-- Creates/uses `.venv`, installs MetaScrub deps.
-- Checks for `ffmpeg`; if missing and Homebrew is available, runs `brew install ffmpeg`.
-- If Homebrew is not installed, it exits with a clear message (install Homebrew, then rerun).
-- Launches the TUI when setup is complete.
+### Option B — Install from source
 
-Tip: If your default Python is 3.14+, run with a supported interpreter:
-`PYTHON_BIN=python3.12 ./install_and_run.command`
-
-### 1. Setup
+**Requirements:** Python 3.8+ and `pip`.
 
 ```bash
-# Clone or download this repo
-cd metaScrub
+git clone https://github.com/LightningBerk/MetaScrub.git
+cd MetaScrub
 
-# Create virtual environment (use python3.12 if you have Python 3.14+)
 python3 -m venv .venv
-# OR: python3.12 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 
-# Activate (macOS/Linux)
-source .venv/bin/activate
-# Activate (Windows)
-# .venv\Scripts\activate
-
-# Install
 pip install -e .
 ```
 
-**Note**: For audio/video support, install `ffmpeg` separately:
-- macOS: `brew install ffmpeg`
-- Linux: `apt install ffmpeg` or `yum install ffmpeg`
-- Windows: Download from [ffmpeg.org](https://ffmpeg.org/download.html)
+For **audio/video** scrubbing you also need `ffmpeg`:
 
-### 2. Run CLI
+| OS      | Command                                                        |
+| ------- | -------------------------------------------------------------- |
+| macOS   | `brew install ffmpeg`                                          |
+| Linux   | `apt install ffmpeg` or `dnf install ffmpeg`                   |
+| Windows | Download from [ffmpeg.org](https://ffmpeg.org/download.html)   |
 
-```bash
-# Scrub a single file
-scrubmeta scrub photo.jpg --out cleaned/
+For **PDF** scrubbing, `pikepdf` requires the `qpdf` system library:
 
-# Scrub a folder (recursive)
-scrubmeta scrub photos/ --out cleaned/ --recursive
-
-# Preview without writing (dry-run)
-scrubmeta scrub documents/ --out cleaned/ --dry-run
-
-# Preserve directory structure
-scrubmeta scrub archive/ --out cleaned/ --recursive --keep-structure
-```
-
-### 3. Run TUI
-
-```bash
-scrubmeta tui
-```
-
-**TUI Features:**
-- Pick file/folder using a built-in interactive `DirectoryTree` browser
-- Visual checkboxes (`✓` / `✗`) for rapid configuration
-- Progress bar, results table with real-time status colors
-- Seamlessly integrates with standard terminal workflows
-
-### 4. Run Tests
-
-```bash
-# Install test dependencies
-pip install pytest
-
-# Run tests
-pytest -v
-
-# Quick smoke test
-pytest -q
-```
+| OS      | Command              |
+| ------- | -------------------- |
+| macOS   | `brew install qpdf`  |
+| Linux   | `apt install qpdf`   |
 
 ---
 
 ## Usage
 
-### CLI Options
-
-```
-scrubmeta scrub <input_path> --out <output_dir> [options]
-
-Options:
-  --recursive         Process subdirectories
-  --dry-run          Preview without writing
-  --overwrite        Overwrite existing outputs (default: append suffix)
-  --keep-structure   Preserve directory structure
-  --ffmpeg-path PATH Custom ffmpeg binary path
-```
-
-### Examples
+### CLI
 
 ```bash
-# Single file
-scrubmeta scrub document.pdf --out cleaned/
+# Scrub a single file
+scrubmeta scrub photo.jpg --out cleaned/
 
-# Batch with structure preserved
-scrubmeta scrub photos/ --out cleaned/ --recursive --keep-structure
+# Scrub a folder recursively
+scrubmeta scrub photos/ --out cleaned/ --recursive
 
-# Custom ffmpeg path
+# Dry-run (preview only)
+scrubmeta scrub documents/ --out cleaned/ --dry-run
+
+# Preserve directory structure in output
+scrubmeta scrub archive/ --out cleaned/ --recursive --keep-structure
+
+# Use a custom ffmpeg binary
 scrubmeta scrub media/ --out cleaned/ --ffmpeg-path /usr/local/bin/ffmpeg
 ```
 
----
+**CLI flags:**
 
-## Supported File Types
+| Flag               | Description                                      |
+| ------------------ | ------------------------------------------------ |
+| `--recursive`      | Process subdirectories                            |
+| `--dry-run`        | Preview without writing                           |
+| `--overwrite`      | Overwrite existing outputs (default: append `_clean_N`) |
+| `--keep-structure` | Mirror input directory tree in output             |
+| `--ffmpeg-path`    | Path to a custom `ffmpeg` binary                  |
 
-| Type | Extensions | Method |
-|------|-----------|--------|
-| **Images** | `.jpg`, `.png`, `.webp` | Pillow (EXIF/IPTC/XMP removed) |
-| **PDFs** | `.pdf` | pikepdf (metadata + XMP cleared) |
-| **Office** | `.docx`, `.xlsx`, `.pptx` | ZIP manipulation (docProps removed) |
-| **Video** | `.mp4`, `.mov`, `.mkv`, `.avi`, `.webm`, etc | ffmpeg `-map_metadata -1` |
-| **Audio** | `.mp3`, `.flac`, `.m4a`, `.ogg`, etc | ffmpeg `-map_metadata -1` |
-
----
-
-## Download Standalone App
-
-Don't want to install Python? **Pre-built standalone executables** for Windows (`.exe`), macOS, and Linux are automatically compiled on every commit via GitHub Actions.
-
-1. Navigate to the **Actions** tab on the GitHub repository.
-2. Click the latest successful workflow run for `Build Standalone Executables`.
-3. Scroll down to the **Artifacts** section at the bottom.
-4. Download the `.zip` file for your operating system.
-5. Extract it and run the included `metascrub` binary!
-
-(Executables are built using `pyinstaller --onefile scrubmeta/cli.py`)
-
----
-
-## Local Development
-
-### Project Structure
-
-```
-metaScrub/
-├── scrubmeta/              # Main package
-│   ├── __init__.py
-│   ├── __main__.py         # python -m scrubmeta
-│   ├── cli.py              # CLI entry point
-│   ├── core.py             # Shared scrubbing logic
-│   ├── tui/                # Terminal User Interface
-│   │   ├── __init__.py
-│   │   ├── app.py          # TUI layout and app
-│   │   └── widgets.py      # Custom Textual widgets
-│   ├── scrubbers/          # File-type handlers
-│   │   ├── image_scrubber.py
-│   │   ├── pdf_scrubber.py
-│   │   ├── ooxml_scrubber.py
-│   │   └── media_scrubber.py
-│   └── utils/              # Shared utilities
-│       ├── file_utils.py
-│       └── result.py
-├── tests/                  # Test suite
-├── docs/                   # Additional documentation
-├── setup.py                # Package metadata
-├── requirements.txt        # Dependencies
-└── README.md
-```
-
-### Quick Sanity Checks
-
-```bash
-# 1. Verify CLI works
-scrubmeta scrub tests/fixtures/test_image.jpg --out /tmp/test_output 2>&1 | head -5
-
-# 2. Verify TUI launches
-scrubmeta tui &
-# Close terminal app, verify no crash
-
-# 3. Test error handling (bad file)
-echo "not an image" > /tmp/bad.jpg
-scrubmeta scrub /tmp/bad.jpg --out /tmp/test_output
-# Should show clear error + fix hint
-
-# 4. Run full test suite
-pytest -v
-# All tests should pass
-```
-
-### Dependencies
-
-Core:
-- `Pillow>=10.0.0` - Image processing
-- `piexif>=1.1.3` - EXIF handling
-- `pikepdf>=8.0.0` - PDF manipulation (requires `qpdf` system library)
-- `textual>=0.40.0` - TUI framework
-
-External:
-- `ffmpeg` - Audio/video metadata removal (binary, not Python package)
-
----
-
-## How It Works
-
-### Safety & Atomic Operations
-
-1. **Never modifies originals** - Reads input, writes to new file
-2. **Atomic writes** - Uses temp files, moves only on success
-3. **Automatic cleanup** - Failed operations clean up temp files
-4. **Collision handling** - Appends `_clean_N` suffix when outputs exist
-
-### Error Handling
-
-All errors are categorized and include actionable fix hints:
-
-```
-ERROR | /path/to/file.jpg | Not a valid image file or unsupported format
-  Fix: Verify file is a valid JPG, PNG, or WebP image
-
-Error breakdown by category:
-  input_error: 1
-```
-
-Error categories: `INPUT_ERROR`, `PERMISSION_ERROR`, `DEPENDENCY_ERROR`, `PROCESSING_ERROR`, `OUTPUT_ERROR`, `CANCELLED`
-
-See `docs/ERROR_HANDLING.md` for comprehensive error documentation.
-
----
-
-## Limitations
-
-- **JPEG re-encoding**: Images are re-encoded at quality=95 (minor quality loss)
-- **Embedded content**: Doesn't scrub metadata from embedded files (e.g., images in PDFs)
-- **Unsupported files**: Skipped (not copied to output)
-- **Office macros**: Not removed or scanned
-
----
-
-## Troubleshooting
-
-**PDF scrubbing fails:**
-
-```bash
-# Install qpdf system library
-# macOS:
-brew install qpdf
-# Linux:
-apt install qpdf
-```
-
-**Audio/video skipped:**
-
-```bash
-# Install ffmpeg
-brew install ffmpeg  # macOS
-apt install ffmpeg   # Linux
-```
-
-**Permission errors:**
-- Check file/directory permissions: `ls -la <path>`
-- Ensure output directory is writable
-
-**TUI won't launch:**
-- Verify Textual installed: `python -c "import textual; print('OK')"`
-- Check Python version: `python --version` (requires 3.8+)
-
----
-
-## License
-
-MIT License - Use at your own risk. Always keep backups of important files.
-
----
-
-## Additional Resources
-
-- **Error handling guide**: `docs/ERROR_HANDLING.md`
-- **Implementation report**: `docs/ERROR_HANDLING_REPORT.md`
-- **Tests**: `tests/`
-
----
-
-**Last Updated**: December 2025 | **Version**: 1.0.0
-
-## Usage (TUI)
-
-Launch the interactive Terminal UI (Textual):
+### TUI
 
 ```bash
 scrubmeta tui
 ```
 
-Features:
-- Pick single file or folder (batch) interactively using a `DirectoryTree` browser.
-- Options: recursive, keep structure, overwrite, dry-run via visual custom checkboxes.
-- Progress bar, status text, and real-time per-file results table colored by status constraints.
-- Fully operational without leaving the command line.
+- Browse and select input files/folders with an interactive **DirectoryTree**
+- Toggle options via visual checkboxes (green `✓` / red `✗`)
+- Watch a live progress bar and color-coded results table
+
+---
 
 ## Supported File Types
 
-| File Type | Extensions | Metadata Removed |
-|-----------|-----------|------------------|
-| **Images** | `.jpg`, `.jpeg`, `.png`, `.webp` | EXIF, IPTC, XMP |
-| **PDFs** | `.pdf` | Document info, XMP metadata |
-| **Office Docs** | `.docx`, `.xlsx`, `.pptx` | Core properties, app properties, custom properties |
-| **Video** | `.mp4`, `.mov`, `.mkv`, `.avi`, `.m4v`, `.webm`, `.mpg`, `.mpeg` | Container metadata via ffmpeg (`-map_metadata -1`) |
-| **Audio** | `.mp3`, `.wav`, `.flac`, `.m4a`, `.aac`, `.ogg`, `.opus` | Container metadata via ffmpeg (`-map_metadata -1`) |
+| Type       | Extensions                                                     | Method                                     |
+| ---------- | -------------------------------------------------------------- | ------------------------------------------ |
+| **Images** | `.jpg`, `.jpeg`, `.png`, `.webp`                               | Pillow — strips EXIF, IPTC, XMP            |
+| **PDFs**   | `.pdf`                                                         | pikepdf — clears doc-info dict and XMP     |
+| **Office** | `.docx`, `.xlsx`, `.pptx`                                      | ZIP manipulation — removes `docProps/`     |
+| **Video**  | `.mp4`, `.mov`, `.mkv`, `.avi`, `.m4v`, `.webm`, `.mpg`, `.mpeg` | ffmpeg `-map_metadata -1 -c copy`          |
+| **Audio**  | `.mp3`, `.wav`, `.flac`, `.m4a`, `.aac`, `.ogg`, `.opus`       | ffmpeg `-map_metadata -1 -c copy`          |
 
-## Output Format
+---
 
-The tool prints a line for each file processed:
+## How It Works
 
+### Images (JPG, PNG, WebP)
+
+Opens the image with Pillow, creates a clean copy without metadata, and re-encodes at quality 95.
+
+### PDFs
+
+Uses `pikepdf` to clear the document info dictionary and XMP metadata stream while preserving content.
+
+### Office Documents (DOCX, XLSX, PPTX)
+
+Treats files as OOXML ZIP archives, removes `docProps/` metadata XMLs, and repackages.
+
+### Audio / Video (ffmpeg)
+
+Runs `ffmpeg -map_metadata -1 -map_chapters -1 -c copy` to strip container metadata **without** re-encoding, so there is no quality loss.
+
+### Safety & Atomicity
+
+1. **Never modifies originals** — reads input, writes to a new file.
+2. **Atomic writes** — uses temp files; moves to final path only on success.
+3. **Automatic cleanup** — temp files are removed on failure.
+4. **Collision handling** — appends `_clean_N` suffix when the output already exists.
+
+---
+
+## Error Handling
+
+Every error is classified into a category and paired with a fix hint:
+
+```text
+ERROR | /path/to/file.jpg | Not a valid image file or unsupported format
+  Fix: Verify file is a valid JPG, PNG, or WebP image
 ```
-SUCCESS | /path/to/input.jpg -> /path/to/output.jpg | removed: EXIF/IPTC/XMP metadata
-SKIP | /path/to/file.txt | Unsupported file type: .txt
-ERROR | /path/to/corrupt.pdf | Failed to open file
-```
 
-At the end, a summary is printed:
+**Categories:** `INPUT_ERROR`, `PERMISSION_ERROR`, `DEPENDENCY_ERROR`, `PROCESSING_ERROR`, `OUTPUT_ERROR`, `CANCELLED`
 
-```
+A summary with per-category counts is printed at the end of every run.
+
+---
+
+## CLI Output
+
+```text
+SUCCESS | input.jpg -> cleaned/input.jpg | removed: EXIF/IPTC/XMP metadata
+SKIP    | notes.txt                      | Unsupported file type: .txt
+ERROR   | corrupt.pdf                    | Failed to open file
+
 ============================================================
 SUMMARY
 ============================================================
@@ -352,104 +169,80 @@ Errors:         1
 ============================================================
 ```
 
-## How It Works
+---
 
-### Images (JPG, PNG, WebP)
+## Limitations
 
-- Opens the image with Pillow
-- Creates a new clean image without metadata
-- Re-encodes with high quality settings
-- **Note**: This is a lossy operation for JPEGs (quality=95)
+- **JPEG quality** — re-encoded at quality 95 (minor loss possible)
+- **Embedded content** — metadata inside embedded files (e.g., images in PDFs) is not scrubbed
+- **Unsupported formats** — silently skipped (not copied)
+- **Office macros** — not removed or scanned
+- **Partial metadata** — some obscure fields may persist
 
-### PDFs
+---
 
-- Uses `pikepdf` to open and modify PDFs
-- Removes document info dictionary entries
-- Clears XMP metadata streams
-- Preserves document content and structure
+## Troubleshooting
 
-### Office Documents (DOCX, XLSX, PPTX)
+| Problem                | Fix                                                                 |
+| ---------------------- | ------------------------------------------------------------------- |
+| PDF scrubbing fails    | Install `qpdf`: `brew install qpdf` / `apt install qpdf`           |
+| Audio/video skipped    | Install `ffmpeg`: `brew install ffmpeg` / `apt install ffmpeg`      |
+| Permission errors      | Check permissions with `ls -la`; ensure output dir is writable      |
+| TUI won't launch       | Verify Textual: `python -c "import textual; print('OK')"`          |
 
-- Treats files as ZIP archives (OOXML format)
-- Extracts contents
-- Removes metadata XML files from `docProps/` directory
-- Repackages into a clean archive
+---
 
-### Audio/Video (ffmpeg)
+## Project Structure
 
-- Requires `ffmpeg` installed and on `PATH`
-- Uses `ffmpeg -map_metadata -1 -map_chapters -1 -c copy` to strip container metadata without re-encoding
-- Original streams are copied to avoid quality loss
-
-## Limitations (v1)
-
-1. **Image Quality**: JPEG images are re-encoded at quality=95, which may result in minor quality loss
-2. **Embedded Content**: Does not scrub metadata from embedded files (e.g., images inside PDFs)
-3. **Unsupported Files**: Files with unsupported extensions are skipped (not copied)
-4. **Partial Metadata**: Some obscure metadata fields may not be removed
-5. **Office Macros**: Does not remove or scan macro content in Office files
-
-## Safety & Correctness
-
-- **No Original Modification**: Original files are never modified
-- **Atomic Writes**: Files are written to temporary locations then moved to prevent corruption
-- **Validation**: Output directory is created if it doesn't exist
-- **Unicode Support**: Handles unicode filenames correctly
-- **Error Recovery**: Failed operations clean up temporary files
-
-## Development
-
-### Project Structure
-
-```
-metaScrub/
+```text
+MetaScrub/
 ├── scrubmeta/
 │   ├── __init__.py
-│   ├── __main__.py          # Module entry point
-│   ├── cli.py               # CLI implementation
-│   ├── core.py              # Shared scrub API
+│   ├── __main__.py            # python -m scrubmeta
+│   ├── cli.py                 # CLI entry point
+│   ├── core.py                # Shared scrub orchestration
 │   ├── tui/
-│   │   ├── __init__.py
-│   │   ├── app.py           # TUI entry point
-│   │   └── widgets.py       # Modal & VisualCheckbox definition
+│   │   ├── app.py             # TUI layout & app
+│   │   └── widgets.py         # VisualCheckbox, SelectPathModal
 │   ├── scrubbers/
-│   │   ├── __init__.py
-│   │   ├── image_scrubber.py   # JPG/PNG/WebP handler
-│   │   ├── pdf_scrubber.py     # PDF handler
-│   │   ├── ooxml_scrubber.py   # DOCX/XLSX/PPTX handler
-│   │   └── media_scrubber.py   # Audio/Video handler (ffmpeg)
+│   │   ├── image_scrubber.py
+│   │   ├── pdf_scrubber.py
+│   │   ├── ooxml_scrubber.py
+│   │   └── media_scrubber.py
 │   └── utils/
-│       ├── __init__.py
-│       ├── file_utils.py    # File discovery & output management
-│       └── result.py        # Result tracking
-├── tests/                   # Test suite
-├── requirements.txt
+│       ├── file_utils.py      # File discovery & output management
+│       └── result.py          # ScrubResult, ErrorCategory
+├── tests/
 ├── setup.py
+├── requirements.txt
 └── README.md
 ```
 
-### Running Tests
-
-```bash
-python -m pytest tests/
-```
+---
 
 ## Dependencies
 
-- **Pillow** (>=10.0.0): Image processing
-- **piexif** (>=1.1.3): EXIF metadata handling
-- **pikepdf** (>=8.0.0): PDF manipulation
-- **textual** (>=0.40.0): Terminal UI framework
-- **ffmpeg**: required binary for audio/video scrubbing (use `--ffmpeg-path` to point to a custom binary)
+| Package                | Purpose                          |
+| ---------------------- | -------------------------------- |
+| `Pillow` ≥ 10.0       | Image processing                 |
+| `piexif` ≥ 1.1.3      | EXIF metadata handling           |
+| `pikepdf` ≥ 8.0       | PDF manipulation                 |
+| `textual` ≥ 0.40      | Terminal UI framework            |
+| `ffmpeg` *(system)*    | Audio/video metadata removal     |
 
-## Future Enhancements (Not in v1)
+---
 
-- Deep scrubbing of embedded content
-- Verification mode to check if files have metadata
-- Parallel processing for large batches
-- Progress bars for long operations (CLI)
-- Logging to file
+## Running Tests
+
+```bash
+pip install pytest
+pytest -v
+```
+
+---
 
 ## License
 
-This is a v1 implementation for metadata scrubbing. Use at your own risk and always keep backups of important files.
+MIT License — use at your own risk. Always keep backups of important files.
+
+**Last Updated:** March 2026 · **Version:** 1.0.0
