@@ -17,12 +17,17 @@ A cross-platform Python tool for stripping metadata from files. Supports images,
 
 ## Installation
 
-### Option A — Download a standalone binary (no Python required)
+### Option A — Download a pre-built binary (no Python required)
 
-1. Go to the **Actions** tab on the [GitHub repository](https://github.com/LightningBerk/MetaScrub).
-2. Open the latest successful **Build Standalone Executables** run.
-3. Download the artifact `.zip` for your OS (Linux / macOS / Windows).
-4. Extract and run the `metascrub` binary.
+Standalone executables for Windows, macOS, and Linux are published as
+[GitHub Releases](https://github.com/LightningBerk/MetaScrub/releases/latest).
+
+1. Go to the **Releases** page.
+2. Download the binary for your OS (`metascrub-linux`, `metascrub-macos`, or `metascrub-windows.exe`).
+3. Make it executable (Linux/macOS: `chmod +x metascrub-*`) and run it.
+
+> Releases are created automatically whenever a version tag is pushed
+> (e.g. `git tag v1.0.0 && git push --tags`).
 
 ### Option B — Install from source
 
