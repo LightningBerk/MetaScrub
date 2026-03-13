@@ -103,7 +103,7 @@ class TestOutputManager(unittest.TestCase):
     
     def test_output_directory_creation(self):
         """Test that output directory is created."""
-        manager = OutputManager(self.output_dir)
+        _manager = OutputManager(self.output_dir)
         self.assertTrue(self.output_dir.exists())
         self.assertTrue(self.output_dir.is_dir())
     

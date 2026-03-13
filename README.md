@@ -235,12 +235,12 @@ Errors:         1
 
 ## Troubleshooting
 
-| Problem             | Fix                                                              |
-| ------------------- | ---------------------------------------------------------------- |
-| PDF scrubbing fails | Install `qpdf`: `brew install qpdf` / `apt install qpdf`        |
-| Audio/video skipped | Install `ffmpeg`: `brew install ffmpeg` / `apt install ffmpeg`   |
-| Permission errors   | Check permissions with `ls -la`; ensure output dir is writable   |
-| TUI won't launch    | Verify Textual: `python -c "import textual; print('OK')"`       |
+| Problem             | Fix                                                            |
+| ------------------- | -------------------------------------------------------------- |
+| PDF scrubbing fails | Install `qpdf`: `brew install qpdf` / `apt install qpdf`      |
+| Audio/video skipped | Install `ffmpeg`: `brew install ffmpeg` / `apt install ffmpeg` |
+| Permission errors   | Check permissions with `ls -la`; ensure output dir is writable |
+| TUI won't launch    | Verify Textual: `python -c "import textual; print('OK')"`     |
 
 ---
 
