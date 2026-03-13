@@ -102,6 +102,26 @@ For **PDF** scrubbing, `pikepdf` requires the `qpdf` system library:
 | macOS   | `brew install qpdf`  |
 | Linux   | `apt install qpdf`   |
 
+### Updating
+
+Re-run the install one-liner to replace the old binary with the latest release:
+
+**Linux:**
+
+```bash
+curl -Lo metascrub https://github.com/LightningBerk/MetaScrub/releases/latest/download/metascrub-linux && chmod +x metascrub && sudo mv metascrub /usr/local/bin/
+```
+
+**macOS:**
+
+```bash
+curl -Lo metascrub https://github.com/LightningBerk/MetaScrub/releases/latest/download/metascrub-macos && chmod +x metascrub && sudo mv metascrub /usr/local/bin/ && sudo xattr -rd com.apple.quarantine /usr/local/bin/metascrub
+```
+
+**Windows:** Download the latest `metascrub-windows.exe` from the
+[Releases page](https://github.com/LightningBerk/MetaScrub/releases/latest)
+and replace the old file.
+
 ---
 
 ## Usage
